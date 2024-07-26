@@ -1,25 +1,14 @@
-// pages/checkout.tsx
+// app/checkout/page.tsx
 'use client';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useState } from 'react';
-
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import { useCart } from '../../hooks/CartContext'; // Adjust the path if necessary
+import Image from 'next/image'; // Use Image from next/image
 
 const Checkout = () => {
-  // Example cart items, replace with actual cart data from context or state
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { id: 1, name: 'Product 1', price: 29.99, quantity: 2, image: '/images/product1.jpg' },
-    { id: 2, name: 'Product 2', price: 39.99, quantity: 1, image: '/images/product2.jpg' },
-    // Add more items as needed
-  ]);
+  const { cartItems } = useCart();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -66,7 +55,13 @@ const Checkout = () => {
               <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
               {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center border-b py-4">
-                  <img src={item.image} alt={item.name} className="w-24 h-24 object-cover mr-4" />
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    width={100}
+                    height={100}
+                    className="w-24 h-24 object-cover mr-4"
+                  />
                   <div className="flex-grow">
                     <h3 className="text-xl font-semibold">{item.name}</h3>
                     <p className="text-lg">${item.price.toFixed(2)} x {item.quantity}</p>

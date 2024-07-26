@@ -12,7 +12,13 @@ export default {
       CUSTOM_API_URL: process.env.CUSTOM_API_URL,
     },
     images: {
-      domains: ['example.com', 'images.example.com'],
+      remotePatterns: [
+        {
+          protocol: 'http',
+          hostname: 'localhost',
+          port: '3000', // Add port if necessary
+        },
+      ],
     },
     i18n: {
       locales: ['en', 'es', 'fr'],

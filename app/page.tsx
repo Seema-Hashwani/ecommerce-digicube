@@ -1,8 +1,10 @@
-// app/page.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { useCart } from '../hooks/CartContext';
 
 interface Product {
   id: number;
@@ -11,18 +13,40 @@ interface Product {
   image: string;
 }
 
-const Home = async () => {
-  // Example products data, replace with actual API fetch if needed
-  const products: Product[] = [
-    { id: 1, name: 'Product 1', price: 29.99, image: '/images/product.jpg' },
-    { id: 2, name: 'Product 2', price: 39.99, image: '/images/product.jpg' },
-    { id: 3, name: 'Product 3', price: 49.99, image: '/images/product.jpg' },
-    { id: 4, name: 'Product 4', price: 59.99, image: '/images/product.jpg' },
-  ];
+const Home = () => {
+  const { addItem } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [clickedId, setClickedId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch('/products.json');
+        if (response.ok) {
+          const data: Product[] = await response.json();
+          setProducts(data);
+          // Store in local storage
+          localStorage.setItem('products', JSON.stringify(data));
+        } else {
+          console.error('Failed to fetch products');
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleAddToCart = (product: Product) => {
+    addItem({ ...product, quantity: 1 });
+    setClickedId(product.id);
+    setTimeout(() => setClickedId(null), 300);
+  };
 
   return (
     <>
-      <Header/>
+      <Header />
       <main className="container mx-auto p-4">
         <section className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4">Welcome to Our Store!</h1>
@@ -43,19 +67,21 @@ const Home = async () => {
                 <div className="p-4">
                   <h3 className="text-lg font-semibold">{product.name}</h3>
                   <p className="text-xl font-bold">${product.price.toFixed(2)}</p>
-                  <Link
-                    href={`/product/${product.id}`}
-                    className="mt-4 block text-center bg-blue-500 text-white py-2 rounded"
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className={`mt-4 block text-center bg-blue-500 text-white py-2 px-4 rounded transition-transform transform ${
+                      clickedId === product.id ? 'scale-95' : ''
+                    } hover:bg-blue-600`}
                   >
-                    View Details
-                  </Link>
+                    Add to Cart
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         </section>
       </main>
-      <Footer/>
+      <Footer />
     </>
   );
 };

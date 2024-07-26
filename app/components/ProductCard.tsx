@@ -1,10 +1,9 @@
-// app/components/ProductCard.tsx
 import Image from 'next/image';
 import { useState } from 'react'; // Import useState for managing button effect
 import { useCart } from '../../hooks/CartContext'; // Adjust the path if necessary
 
 interface ProductCardProps {
-  id: number;
+  id: number; // Ensure this matches the Product type
   name: string;
   price: number;
   image: string;

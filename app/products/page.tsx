@@ -1,9 +1,10 @@
-// pages/products.tsx
+// app/products/page.tsx
 'use client';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
+import { useEffect, useState } from 'react';
 
 interface Product {
   id: number;
@@ -13,18 +14,28 @@ interface Product {
 }
 
 const Products = () => {
-  // Example products data, replace with actual API fetch or data source
-  const products: Product[] = [
-    { id: 1, name: 'Product 1', price: 29.99, image: '/images/product.jpg' },
-    { id: 2, name: 'Product 2', price: 39.99, image: '/images/product.jpg' },
-    { id: 3, name: 'Product 3', price: 49.99, image: '/images/product.jpg' },
-    { id: 4, name: 'Product 4', price: 59.99, image: '/images/product.jpg' },
-    { id: 5, name: 'Product 5', price: 29.99, image: '/images/product.jpg' },
-    { id: 6, name: 'Product 6', price: 39.99, image: '/images/product.jpg' },
-    { id: 7, name: 'Product 7', price: 49.99, image: '/images/product.jpg' },
-    { id: 8, name: 'Product 8', price: 59.99, image: '/images/product.jpg' },
-    // Add more products as needed
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = () => {
+      try {
+        const products = JSON.parse(localStorage.getItem('products') || '[]') as Product[];
+        setProducts(products);
+      } catch (error) {
+        setError('Error loading products.');
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <>

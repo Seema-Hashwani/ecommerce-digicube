@@ -20,7 +20,7 @@ const About = () => {
             Welcome to My E-commerce Site! We are dedicated to providing you with the best online shopping experience. Our mission is to offer high-quality products at competitive prices, ensuring customer satisfaction with every purchase.
           </p>
           <p className="text-lg mt-4">
-            Our team is passionate about curating a selection of products that meet your needs and preferences. Whether you're looking for the latest trends or timeless classics, we strive to bring you a diverse range of options to choose from.
+            Our team is passionate about curating a selection of products that meet your needs and preferences. Whether you are looking for the latest trends or timeless classics, we strive to bring you a diverse range of options to choose from.
           </p>
           <p className="text-lg mt-4">
             Thank you for choosing us as your shopping destination. We look forward to serving you!

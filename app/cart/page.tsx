@@ -1,3 +1,4 @@
+// app/cart/page.tsx
 'use client';
 import Head from 'next/head';
 import Header from '../components/Header';
@@ -7,10 +8,14 @@ import Link from 'next/link';
 import Image from 'next/image'; // Use Image from next/image
 
 const Cart = () => {
-  const { cartItems, removeItem, clearCart } = useCart();
+  const { cartItems, removeItem, clearCart, updateQuantity } = useCart();
 
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  const handleQuantityChange = (id: number, quantity: number) => {
+    updateQuantity(id, quantity);
   };
 
   return (
@@ -46,7 +51,7 @@ const Cart = () => {
                       <div className="flex items-center mt-2">
                         <button
                           onClick={() => handleQuantityChange(item.id, Math.max(item.quantity - 1, 1))}
-                          className="bg-gray-200 px-2 py-1 rounded-l text-black" 
+                          className="bg-gray-200 px-2 py-1 rounded-l text-black"
                         >
                           -
                         </button>
@@ -59,7 +64,7 @@ const Cart = () => {
                         />
                         <button
                           onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          className="bg-gray-200 px-2 py-1 rounded-r text-black" 
+                          className="bg-gray-200 px-2 py-1 rounded-r text-black"
                         >
                           +
                         </button>
@@ -97,12 +102,6 @@ const Cart = () => {
       <Footer />
     </>
   );
-
-  function handleQuantityChange(id: number, quantity: number) {
-    // Function to update item quantity, assuming it's handled in the context or can be added
-    // If not handled in the context, you can implement this functionality in CartContext
-    // For now, you might want to update this as per your application logic
-  }
 };
 
 export default Cart;

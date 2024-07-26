@@ -1,17 +1,12 @@
 // app/layout.tsx
-import './globals.css'; // Assuming you have global styles
-import { CartProvider } from '../hooks/CartContext'; // Adjust the path if necessary
-
-export const metadata = {
-  title: 'Your App Title',
-  description: 'Your app description',
-};
+import './globals.css'; // Import global styles
+import { CartProvider } from '../hooks/CartContext'; // Import CartProvider
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        {/* Wrap the entire application with CartProvider */}
+        {/* Wrap the entire application with CartProvider to provide cart context */}
         <CartProvider>
           {children}
         </CartProvider>
