@@ -1,15 +1,34 @@
-// app/checkout/page.tsx
 'use client';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useState } from 'react';
-import { useCart } from '../../hooks/CartContext'; // Adjust the path if necessary
-import Image from 'next/image'; // Use Image from next/image
+import { useCart } from '../../hooks/CartContext';
+import Image from 'next/image';
+
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
+
+export interface Order {
+  id: number;
+  customerName: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  paymentMethod: string;
+  products: { product: Product; quantity: number }[];
+  totalAmount: number;
+}
 
 const Checkout = () => {
   const { cartItems } = useCart();
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,7 +36,7 @@ const Checkout = () => {
     city: '',
     state: '',
     zip: '',
-    paymentMethod: 'creditCard', // or 'paypal'
+    paymentMethod: 'creditCard',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -25,15 +44,45 @@ const Checkout = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle form submission (e.g., send data to an API)
-    console.log('Order submitted:', { ...formData, cartItems });
-    // Clear form or redirect user
+
+    // Read orders from local storage
+    const storedOrders = JSON.parse(localStorage.getItem('orders') || '[]') as Order[];
+
+    // Create new order
+    const newOrder: Order = {
+      id: generateUniqueId(storedOrders),
+      customerName: formData.name,
+      email: formData.email,
+      address: formData.address,
+      city: formData.city,
+      state: formData.state,
+      zip: formData.zip,
+      paymentMethod: formData.paymentMethod,
+      products: cartItems.map(item => ({ product: item, quantity: item.quantity })),
+      totalAmount: getTotalPrice(),
+    };
+
+    // Save new order to local storage
+    storedOrders.push(newOrder);
+    localStorage.setItem('orders', JSON.stringify(storedOrders));
+
+    // Clear cart
+    localStorage.removeItem('cart');
+    alert('Your order has been placed successfully!');
   };
 
   const getTotalPrice = () => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  };
+
+  const generateUniqueId = (existingOrders: Order[]): number => {
+    let newId = 1;
+    while (existingOrders.some(order => order.id === newId)) {
+      newId += 1;
+    }
+    return newId;
   };
 
   return (
@@ -162,7 +211,7 @@ const Checkout = () => {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+                  className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
                 >
                   Place Order
                 </button>

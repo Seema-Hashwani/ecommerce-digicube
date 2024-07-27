@@ -1,9 +1,10 @@
+// app/admin/products/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import AdminLayout from '../layout';
 import Link from 'next/link';
-import { Product } from '../types';
+import { Product } from '..//../types';
 
 const AdminProductList = () => {
   const [products, setProducts] = useState<Product[]>([]);

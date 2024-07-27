@@ -1,4 +1,4 @@
-// app/products/new/page.tsx
+// app/admin/products/new/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -7,6 +7,15 @@ import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import { Product } from '../../../types'; // Ensure this import is correct
 import { useRouter } from 'next/navigation';
+
+// Function to generate a unique numeric ID
+const generateUniqueId = (existingIds: Set<number>): number => {
+  let newId = 1; // Start from 1 or any other initial value
+  while (existingIds.has(newId)) {
+    newId += 1; // Increment ID until a unique one is found
+  }
+  return newId;
+};
 
 const NewProduct = () => {
   const [product, setProduct] = useState<Omit<Product, 'id'>>({
@@ -35,7 +44,8 @@ const NewProduct = () => {
     setSuccess(null);
     try {
       const products = JSON.parse(localStorage.getItem('products') || '[]') as Product[];
-      const newProduct = { ...product, id: Date.now() }; // Generate a unique ID using timestamp
+      const existingIds = new Set(products.map(product => product.id)); // Collect existing IDs
+      const newProduct = { ...product, id: generateUniqueId(existingIds) }; // Generate a unique ID
       localStorage.setItem('products', JSON.stringify([...products, newProduct]));
       setSuccess('Product added successfully!');
       setProduct({ name: '', price: 0, image: '' });

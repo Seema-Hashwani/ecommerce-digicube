@@ -5,10 +5,19 @@ export interface Product {
   price: number;
   image: string;
 }
+export interface Order {
+  id: number;
+  customerName: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  paymentMethod: string;
+  totalAmount: number;
+  products: {
+    product: Product;
+    quantity: number;
+  }[];
+}
 
-  export interface Order {
-    id: number;
-    customerName: string;
-    products: Product[];
-    totalAmount: number;
-  }
+// beIa9zitE19WP2LG [password for mongodb user seemahashwani05]

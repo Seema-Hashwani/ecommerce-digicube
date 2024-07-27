@@ -1,10 +1,10 @@
+// app/home/page.tsx
 'use client';
-
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Header from './components/Header';
+import Head from 'next/head';
+import Header from './/components/Header';
 import Footer from './components/Footer';
-import { useCart } from '../hooks/CartContext';
+import ProductCard from './components/ProductCard';
+import { useEffect, useState } from 'react';
 
 interface Product {
   id: number;
@@ -14,38 +14,37 @@ interface Product {
 }
 
 const Home = () => {
-  const { addItem } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
-  const [clickedId, setClickedId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProducts = () => {
       try {
-        const response = await fetch('/products.json');
-        if (response.ok) {
-          const data: Product[] = await response.json();
-          setProducts(data);
-          // Store in local storage
-          localStorage.setItem('products', JSON.stringify(data));
-        } else {
-          console.error('Failed to fetch products');
-        }
+        const products = JSON.parse(localStorage.getItem('products') || '[]') as Product[];
+        // Display only the first 4 products
+        setProducts(products.slice(0, 4));
       } catch (error) {
-        console.error('Error fetching products:', error);
+        setError('Error loading products.');
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchProducts();
   }, []);
 
-  const handleAddToCart = (product: Product) => {
-    addItem({ ...product, quantity: 1 });
-    setClickedId(product.id);
-    setTimeout(() => setClickedId(null), 300);
-  };
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <>
+      <Head>
+        <title>Home | My E-commerce Site</title>
+        <meta name="description" content="Welcome to our e-commerce site. Find the best products here." />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <Header />
       <main className="container mx-auto p-4">
         <section className="text-center mb-8">
@@ -53,30 +52,15 @@ const Home = () => {
           <p className="text-lg">Find the best products at amazing prices.</p>
         </section>
         <section>
-          <h2 className="text-2xl font-semibold mb-4">Featured Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {products.map((product) => (
-              <div key={product.id} className="border rounded-lg overflow-hidden shadow-lg">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={500}
-                  height={300}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold">{product.name}</h3>
-                  <p className="text-xl font-bold">${product.price.toFixed(2)}</p>
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className={`mt-4 block text-center bg-blue-500 text-white py-2 px-4 rounded transition-transform transform ${
-                      clickedId === product.id ? 'scale-95' : ''
-                    } hover:bg-blue-600`}
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                image={product.image}
+              />
             ))}
           </div>
         </section>
