@@ -1,10 +1,11 @@
+// app/admin/layout.tsx
 import React, { ReactNode } from 'react';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const AdminLayout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div>
       <header>
@@ -18,4 +19,4 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 }
 
-export default Layout;
+export default AdminLayout;

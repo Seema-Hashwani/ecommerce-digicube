@@ -1,12 +1,14 @@
 // app/types.ts
 export interface Product {
-  id: number; // Change to number
+  id: string; // MongoDB ObjectId as a string
   name: string;
   price: number;
   image: string;
+  quantity: number;
 }
+
 export interface Order {
-  id: number;
+  id: string; // MongoDB ObjectId as a string
   customerName: string;
   email: string;
   address: string;
@@ -19,5 +21,3 @@ export interface Order {
     quantity: number;
   }[];
 }
-
-// beIa9zitE19WP2LG [password for mongodb user seemahashwani05]

@@ -12,15 +12,18 @@ const EditProduct = ({ params }: { params: { id: string } }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchProduct = () => {
-      const products = JSON.parse(localStorage.getItem('products') || '[]') as Product[];
-      const foundProduct = products.find(p => p.id.toString() === params.id);
-      if (foundProduct) {
-        setProduct(foundProduct);
-      } else {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(`/api/products/${params.id}`);
+        if (!response.ok) throw new Error('Product not found');
+
+        const data = await response.json();
+        setProduct(data);
+      } catch (error) {
         setError('Product not found');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchProduct();
@@ -33,17 +36,23 @@ const EditProduct = ({ params }: { params: { id: string } }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!product) return;
     setLoading(true);
     setError(null);
+
     try {
-      const products = JSON.parse(localStorage.getItem('products') || '[]') as Product[];
-      const updatedProducts = products.map(p =>
-        p.id.toString() === product.id.toString() ? product : p
-      );
-      localStorage.setItem('products', JSON.stringify(updatedProducts));
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(product),
+      });
+
+      if (!response.ok) throw new Error('Error updating product');
+
       router.push('/admin/products');
     } catch (error) {
       setError('Error updating product');

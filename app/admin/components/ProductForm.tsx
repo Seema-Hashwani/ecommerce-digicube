@@ -55,7 +55,7 @@ const ProductForm = ({ product, onSubmit }: ProductFormProps) => {
         type="submit"
         className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
       >
-        {product ? 'Update Product' : 'Add Product'}
+        Add Product
       </button>
     </form>
   );

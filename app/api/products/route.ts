@@ -1,20 +1,31 @@
-import { NextResponse } from 'next/server';
-import { Product } from '../../types';
+import { MongoClient } from 'mongodb';
 
-let products: Product[] = [
-  { id: 1, name: 'Product 1', price: 29.99, image: '' },
-  { id: 2, name: 'Product 2', price: 39.99, image: '' },
-  { id: 3, name: 'Product 3', price: 49.99, image: '' },
-];
+const uri = process.env.MONGODB_URI as string; 
+const client = new MongoClient(uri);
 
-export async function PUT(request: Request) {
-  const { id, name, price, image } = await request.json();
-  const index = products.findIndex(p => p.id === id);
+export async function GET() {
+  try {
+    await client.connect();
+    const database = client.db('ecommerce');
+    const productsCollection = database.collection('products');
+    const products = await productsCollection.find({}).toArray();
+    
+    const transformedProducts = products.map(product => ({
+      id: product._id.toString(),
+      name: product.name,
+      price: product.price,
+      image: product.image,
+    }));
 
-  if (index === -1) {
-    return NextResponse.json({ message: 'Product not found' }, { status: 404 });
+    return new Response(JSON.stringify(transformedProducts), { status: 200 });
+  } catch (error) {
+    const message = (error as Error).message || 'Unknown error';
+    console.error('Error fetching products:', message);
+    return new Response(
+      JSON.stringify({ error: 'Failed to fetch products', details: message }),
+      { status: 500 }
+    );
+  } finally {
+    await client.close(); // Ensure the connection is always closed
   }
-
-  products[index] = { id, name, price, image };
-  return NextResponse.json(products[index]);
 }

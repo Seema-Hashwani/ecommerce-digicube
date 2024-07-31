@@ -1,33 +1,51 @@
-// app/api/products/[id]/route.ts
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { MongoClient, ObjectId } from 'mongodb';
 
-const products = [
-  { id: '1', name: 'Product 1', price: 29.99 },
-  { id: '2', name: 'Product 2', price: 39.99 },
-  { id: '5', name: 'Product 5', price: 59.99 }
-];
+const uri = process.env.MONGODB_URI as string;
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
-  const product = products.find(p => p.id === id);
-
-  if (product) {
-    return NextResponse.json(product);
-  } else {
-    return NextResponse.json({ message: 'Product not found' }, { status: 404 });
-  }
+if (!uri) {
+  console.error('MONGODB_URI is not defined');
+  process.exit(1);
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
-  const { name, price } = await request.json();
-  const productIndex = products.findIndex(p => p.id === id);
+let client: MongoClient;
 
-  if (productIndex !== -1) {
-    products[productIndex] = { id, name, price };
-    return NextResponse.json(products[productIndex]);
-  } else {
-    return NextResponse.json({ message: 'Product not found' }, { status: 404 });
+async function getClient() {
+  if (!client) {
+    client = new MongoClient(uri);
+  }
+  return client;
+}
+
+export async function GET(request: Request) {
+  const id = new URL(request.url).pathname.split('/').pop();
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+  }
+
+  try {
+    const client = await getClient();
+    await client.connect();
+    const database = client.db('ecommerce');
+    const collection = database.collection('products');
+    
+    const product = await collection.findOne({ _id: new ObjectId(id) });
+
+    if (product) {
+      return NextResponse.json(product);
+    } else {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching product:', error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    } else {
+      console.error('Unexpected error:', error);
+      return NextResponse.json({ error: 'Unexpected error' }, { status: 500 });
+    }
+  } finally {
+    // Optional: Manage connections properly at the application level
   }
 }

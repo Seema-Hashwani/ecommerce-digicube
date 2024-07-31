@@ -5,23 +5,15 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
-import { Product } from '../../../types'; // Ensure this import is correct
+import { Product } from '../../../types';
 import { useRouter } from 'next/navigation';
-
-// Function to generate a unique numeric ID
-const generateUniqueId = (existingIds: Set<number>): number => {
-  let newId = 1; // Start from 1 or any other initial value
-  while (existingIds.has(newId)) {
-    newId += 1; // Increment ID until a unique one is found
-  }
-  return newId;
-};
 
 const NewProduct = () => {
   const [product, setProduct] = useState<Omit<Product, 'id'>>({
     name: '',
     price: 0,
     image: '',
+    quantity: 0
   });
 
   const [loading, setLoading] = useState(false);
@@ -37,21 +29,30 @@ const NewProduct = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
-      const products = JSON.parse(localStorage.getItem('products') || '[]') as Product[];
-      const existingIds = new Set(products.map(product => product.id)); // Collect existing IDs
-      const newProduct = { ...product, id: generateUniqueId(existingIds) }; // Generate a unique ID
-      localStorage.setItem('products', JSON.stringify([...products, newProduct]));
+      const response = await fetch('/api/products/new', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(product),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error submitting product');
+      }
+
       setSuccess('Product added successfully!');
-      setProduct({ name: '', price: 0, image: '' });
+      setProduct({ name: '', price: 0, image: '', quantity:0 });
       router.push('/admin/products');
     } catch (error) {
-      setError('Error submitting product. Please try again.');
+      setError(`Error submitting product: ${(error as Error).message}`);
       console.error('Error submitting product:', error);
     } finally {
       setLoading(false);

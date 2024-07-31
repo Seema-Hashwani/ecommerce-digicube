@@ -1,3 +1,5 @@
+// app/admin/page.tsx
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,6 +9,7 @@ import { Product } from '../types';
 
 const AdminProductList = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProductsFromLocalStorage = () => {
@@ -21,7 +24,7 @@ const AdminProductList = () => {
     fetchProductsFromLocalStorage();
   }, []);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => { // Updated id type to string
     const updatedProducts = products.filter(product => product.id !== id);
 
     // Update local storage
@@ -37,6 +40,7 @@ const AdminProductList = () => {
       <Link href="/admin/products/new" className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mb-4 inline-block">
         Add New Product
       </Link>
+      {error && <p className="text-red-500">{error}</p>}
       <table className="min-w-full">
         <thead>
           <tr>

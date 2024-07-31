@@ -1,35 +1,70 @@
-// app/admin/products/page.tsx
 'use client';
-
 import { useEffect, useState } from 'react';
 import AdminLayout from '../layout';
 import Link from 'next/link';
-import { Product } from '..//../types';
+import { Product } from '../../types';
 
 const AdminProductList = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProductsFromLocalStorage = () => {
-      const storedProducts = localStorage.getItem('products');
-      if (storedProducts) {
-        setProducts(JSON.parse(storedProducts));
-      } else {
-        console.error('No products found in local storage');
+    const fetchProducts = async () => {
+      try {
+
+        // Ensure response is ok
+        const response = await fetch('/api/products');
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Fetched Products:', data);
+        } else {
+          console.error('Fetch Error:', response.statusText);
+        }
+        
+
+        // Read the response once and parse as JSON
+        const data = await response.json();
+
+        // Validate the data structure
+        if (Array.isArray(data) && data.every(item => item._id && item.name && typeof item.price === 'number')) {
+          const products: Product[] = data.map(item => ({
+            id: item._id,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            quantity: 0, // Assuming quantity needs to be set here
+          }));
+          setProducts(products);
+        } else {
+          setError('Data format is incorrect');
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        setError(`Error fetching products: ${message}`);
+        console.error('Error fetching products:', message);
       }
     };
 
-    fetchProductsFromLocalStorage();
+    fetchProducts();
   }, []);
 
-  const handleDelete = (id: number) => {
-    const updatedProducts = products.filter(product => product.id !== id);
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/products?id=${id}`, {
+        method: 'DELETE',
+      });
 
-    // Update local storage
-    localStorage.setItem('products', JSON.stringify(updatedProducts));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error deleting product');
+      }
 
-    // Update state
-    setProducts(updatedProducts);
+      setProducts(products.filter(product => product.id !== id));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setError(`Error deleting product: ${message}`);
+      console.error('Error deleting product:', message);
+    }
   };
 
   return (
@@ -38,6 +73,7 @@ const AdminProductList = () => {
       <Link href="/admin/products/new" className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mb-4 inline-block">
         Add New Product
       </Link>
+      {error && <p className="text-red-500">{error}</p>}
       <table className="min-w-full">
         <thead>
           <tr>
